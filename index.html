@@ -1,0 +1,235 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Mon pilulier</title>
+<style>
+:root{--bg:#f7f5f0;--card:#fff;--tx:#1c1b1a;--mu:#5c5a55;--pr:#0b6b5c;--prt:#fff;--ok:#1f7a3a;--wa:#b45309;--bd:#d9d5cb;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#15171a;--card:#1f2327;--tx:#f1efe9;--mu:#b5b1a8;--pr:#4fc3ad;--prt:#07211c;--ok:#2e8a4b;--wa:#f2b052;--bd:#3a4047}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#15171a;--card:#1f2327;--tx:#f1efe9;--mu:#b5b1a8;--pr:#4fc3ad;--prt:#07211c;--ok:#2e8a4b;--wa:#f2b052;--bd:#3a4047}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:20px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+#app{max-width:640px;margin:0 auto;padding:12px 14px 120px}
+h1{font-size:26px;margin:4px 0}h2{font-size:23px;margin:12px 0 8px}
+header{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.c{background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:14px;margin:12px 0}
+.c.big{border:2px solid var(--pr)}.c.warn{border-color:var(--wa);border-width:2px}.off{opacity:.6}
+.k{color:var(--mu);font-size:17px}.t{font-size:23px;font-weight:700;margin:2px 0 8px}.mu,small{color:var(--mu)}small{font-size:16px}
+.b{font:inherit;font-weight:600;min-height:56px;padding:10px 16px;border-radius:14px;border:2px solid var(--pr);background:var(--card);color:var(--pr);margin:6px 6px 6px 0;cursor:pointer}
+.b.p{background:var(--pr);color:var(--prt)}.b.big{display:block;width:100%;font-size:22px;min-height:68px;margin:10px 0 0}
+.b.left{display:block;width:100%;text-align:left}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:4px}.r{display:flex;gap:12px;align-items:center;margin:8px 0}
+.th{width:56px;height:56px;border-radius:12px;object-fit:cover;background:var(--bd);display:flex;align-items:center;justify-content:center;font-size:28px;flex:none}
+.tag{padding:4px 12px;border-radius:99px;background:var(--bd);font-size:17px;font-weight:700;white-space:nowrap}.tag.ok{background:var(--ok);color:#fff}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--bd);padding-bottom:env(safe-area-inset-bottom,0px);z-index:5}
+nav button{flex:1;font:inherit;font-size:13px;background:none;border:0;color:var(--mu);padding:8px 2px;min-height:64px}
+nav button.on{color:var(--pr);font-weight:700}nav button span{display:block;font-size:24px}
+input,select{font:inherit;padding:10px;border-radius:12px;border:2px solid var(--bd);background:var(--card);color:var(--tx);max-width:100%}
+input#q{width:100%}
+table{border-collapse:collapse;width:100%;font-size:16px}td,th{border:1px solid var(--bd);padding:6px;vertical-align:top;text-align:left}.m{margin:2px 0}
+.sn{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:12px}.sn>.c{flex:0 0 92%;scroll-snap-align:center}
+.cnt{display:flex;align-items:center;gap:8px;margin:6px 0}.cnt b{min-width:70px;text-align:center;font-size:26px}.cnt .b{min-width:56px;margin:0}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:96px;background:var(--tx);color:var(--bg);padding:12px 18px;border-radius:99px;opacity:0;transition:opacity .3s;z-index:9;pointer-events:none;text-align:center}
+.pr{display:none}
+@media print{nav,header,.np{display:none!important}.pr{display:block}body{background:#fff;color:#000}.c{border:0}td,th{border-color:#888}}
+</style></head><body><div id="app"></div><nav id="nav"></nav><div id="toast"></div>
+<script>
+const DB=`Paracétamol 500 mg|Doliprane 500 mg;Dafalgan 500 mg;Efferalgan 500 mg;Paracétamol Biogaran 500 mg;Paracétamol Arrow 500 mg
+Paracétamol 1000 mg|Doliprane 1000 mg;Dafalgan 1000 mg;Efferalgan 1000 mg;Paracétamol Biogaran 1000 mg;Paracétamol EG 1000 mg
+Ibuprofène 400 mg|Advil 400 mg;Nurofen 400 mg;Ibuprofène Biogaran 400 mg;Ibuprofène Arrow 400 mg
+Amoxicilline 500 mg|Clamoxyl 500 mg;Amoxicilline Biogaran 500 mg;Amoxicilline Sandoz 500 mg;Amoxicilline Arrow 500 mg
+Amoxicilline + acide clavulanique 1 g/125 mg|Augmentin 1 g/125 mg;Amoxicilline/Ac. clavulanique Biogaran;Amoxicilline/Ac. clavulanique Arrow
+Azithromycine 250 mg|Zithromax 250 mg;Azithromycine Biogaran 250 mg;Azithromycine Sandoz 250 mg
+Prednisolone 20 mg|Solupred 20 mg;Prednisolone Biogaran 20 mg;Prednisolone Arrow 20 mg
+Cétirizine 10 mg|Zyrtec 10 mg;Virlix 10 mg;Cétirizine Biogaran 10 mg;Cétirizine Arrow 10 mg
+Oméprazole 20 mg|Mopral 20 mg;Zoltum 20 mg;Oméprazole Biogaran 20 mg;Oméprazole EG 20 mg
+Esoméprazole 20 mg|Inexium 20 mg;Esoméprazole Biogaran 20 mg
+Lopéramide 2 mg|Imodium 2 mg;Lopéramide Biogaran 2 mg
+Métoclopramide 10 mg|Primpéran 10 mg;Métoclopramide Biogaran 10 mg
+Tramadol 50 mg|Contramal 50 mg;Tramadol Biogaran 50 mg
+Paracétamol + codéine 500 mg/30 mg|Klipal Codéine 500 mg/30 mg;Codoliprane 500 mg/30 mg;Dafalgan Codéine 500 mg/30 mg
+Kétoprofène 100 mg|Profénid 100 mg;Kétoprofène Biogaran 100 mg
+Metformine 850 mg|Glucophage 850 mg;Metformine Biogaran 850 mg
+Atorvastatine 20 mg|Tahor 20 mg;Atorvastatine Biogaran 20 mg;Atorvastatine Arrow 20 mg
+Amlodipine 5 mg|Amlor 5 mg;Amlodipine Biogaran 5 mg
+Lévothyroxine|Levothyrox;L-Thyroxine Serb
+Bisoprolol 5 mg|Cardensiel 5 mg;Bisoprolol Biogaran 5 mg
+Furosémide 40 mg|Lasilix 40 mg;Furosémide Biogaran 40 mg
+Montélukast 10 mg|Singulair 10 mg;Montélukast Biogaran 10 mg
+Irbésartan + hydrochlorothiazide 300 mg/12,5 mg|Coaprovel 300 mg/12,5 mg;Irbésartan/Hydrochlorothiazide Arrow 300 mg/12,5 mg;Irbésartan/Hydrochlorothiazide Biogaran 300 mg/12,5 mg
+Nébivolol 5 mg|Témérit 5 mg;Nébivolol Almus 5 mg;Nébivolol Biogaran 5 mg
+Lercanidipine 10 mg|Lercan 10 mg;Zanidip 10 mg;Lercanidipine Arrow 10 mg
+Acide acétylsalicylique 75 mg|Résitune 75 mg;Kardégic 75 mg
+Colestyramine 4 g|Questran 4 g
+Phloroglucinol 80 mg|Spasfon 80 mg;Spasfon-Lyoc 80 mg;Phloroglucinol Biogaran 80 mg
+Lansoprazole 15 mg|Lanzor 15 mg;Ogast 15 mg;Lansoprazole Biogaran 15 mg
+Macrogol|Forlax 10 g;Movicol;Transipeg
+Diosmectite 3 g|Smecta 3 g;Diosmectite Biogaran 3 g
+Ondansétron 8 mg|Zophren 8 mg;Ondansétron Biogaran 8 mg;Ondansétron Arrow 8 mg
+Néfopam 30 mg|Acupan 30 mg;Néfopam Biogaran 30 mg
+Énoxaparine 4000 UI|Lovenox 4000 UI;Énoxaparine Biogaran 4000 UI
+Tinzaparine 10 000 UI|Innohep 10 000 UI
+Pegfilgrastim 6 mg|Neulasta 6 mg;Ziextenzo 6 mg
+Bicarbonate de sodium 1,4 %|Bicarbonate de sodium 1,4 % (bain de bouche)
+Lidocaïne + prilocaïne|Emla crème;Emla patch
+Crème hydratante|Lipikar baume;Cicalfate crème`.split('\n').map(l=>{const[a,b]=l.split('|');return{g:a,n:b.split(';')}});
+const $=s=>document.querySelector(s),uid=()=>Math.random().toString(36).slice(2,9),SL={m:'Matin',d:'Midi',s:'Soir'},IC={m:'☀️',d:'🌤️',s:'🌙'},SK=['m','d','s'],UN=['comprimé','gélule','sachet','injection','application','dose'],U=x=>(x.u||'comprimé')+'(s)',uu=x=>x.u&&x.u!=='comprimé'?' '+x.u:'';
+const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'),today=()=>iso(new Date());
+const add=(s,n)=>{const d=new Date(s+'T12:00:00');d.setDate(d.getDate()+n);return iso(d)};
+const fr=s=>new Date(s+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}),sh=s=>new Date(s+'T12:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
+const fq=n=>{const f={.25:'¼',.5:'½',.75:'¾'}[n%1];return f?(n>=1?Math.floor(n)+' ':'')+f:String(n)},esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])),norm=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const cap=s=>s[0].toUpperCase()+s.slice(1),hm=t=>t.replace(':',' h ');
+let S={profiles:[],times:{m:'08:00',d:'12:00',s:'19:00'},ords:[],logs:{},prn:{},symptoms:['Fièvre','Douleur','Toux','Nausées'],cur:null};
+try{S={...S,...JSON.parse(localStorage.getItem('pil')||'{}')}}catch(e){}
+const save=()=>{try{localStorage.setItem('pil',JSON.stringify(S))}catch(e){toast('Mémoire pleine : supprimez une photo.')}};
+if(!S.profiles.length)S.profiles.push({id:uid(),n:'Moi'});
+if(!S.profiles.some(p=>p.id===S.cur)&&S.cur!=='all')S.cur=S.profiles[0].id;
+let V=S.profiles.length>1?'who':'home',W=null,P=null,ID=null,pm=0,mode='w',hid={},cf=null,tt;
+const pName=id=>(S.profiles.find(p=>p.id===id)||{}).n||'',toast=m=>{const t=$('#toast');t.textContent=m;t.style.opacity=1;clearTimeout(tt);tt=setTimeout(()=>t.style.opacity=0,2600)};
+const btn=(a,t,c,v)=>`<button class="b ${c||''}" data-a="${a}" data-v="${v==null?'':v}">${t}</button>`;
+const meds=()=>S.ords.filter(o=>S.cur==='all'||o.p===S.cur).flatMap(o=>o.meds.map(x=>({o,x})));
+const inR=(x,d)=>d>=x.start&&(!x.dur||d<=add(x.start,x.dur-1));
+const dueOn=(d,s)=>meds().filter(({o,x})=>o.on&&x.on&&!x.prn&&x.q[s]>0&&inR(x,d));
+const thumb=x=>x.img?`<img class="th" src="${x.img}" alt="">`:'<div class="th">💊</div>';
+const pos=x=>pos0(x)+(x.note?'<br><small>'+esc(x.note)+'</small>':''),pos0=x=>x.prn?`${fq(x.n)} ${U(x)} si ${esc(x.sym.toLowerCase())}`+(x.dur?` · ${x.dur} jours`:''):SK.filter(k=>x.q[k]).map(k=>SL[k]+' '+fq(x.q[k])+uu(x)).join(' · ')+(x.dur?` · ${x.dur} jours dès le ${sh(x.start)}`:' · sans date de fin');
+const ld=u=>new Promise((ok,ko)=>{const s=document.createElement('script');s.src=u;s.onload=ok;s.onerror=ko;document.head.appendChild(s)});
+async function pdfImg(f,mx){
+ toast('Lecture du PDF…');const B='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
+ if(!window.pdfjsLib)await ld(B+'pdf.min.js');if(!window.pdfjsWorker)await ld(B+'pdf.worker.min.js');
+ const d=await pdfjsLib.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise,n=Math.min(d.numPages,3),cs=[];
+ for(let p=1;p<=n;p++){const pg=await d.getPage(p),v0=pg.getViewport({scale:1}),v=pg.getViewport({scale:mx/Math.max(v0.width,v0.height)}),c=document.createElement('canvas');c.width=v.width;c.height=v.height;await pg.render({canvasContext:c.getContext('2d'),viewport:v}).promise;cs.push(c)}
+ const o=document.createElement('canvas');o.width=Math.max(...cs.map(c=>c.width));o.height=cs.reduce((a,c)=>a+c.height,0);const g=o.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,o.width,o.height);let y=0;cs.forEach(c=>{g.drawImage(c,0,y);y+=c.height});
+ return o.toDataURL('image/jpeg',.6)}
+function grab(cb,mx,file){const i=document.createElement('input');i.type='file';i.accept=file?'image/*,application/pdf':'image/*';if(!file)i.capture='environment';i.onchange=()=>{const f=i.files[0];if(!f)return;if(f.type==='application/pdf'){pdfImg(f,mx).then(cb).catch(()=>toast('PDF illisible : essayez une photo.'));return}const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,mx/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);cb(c.toDataURL('image/jpeg',.6))};im.src=r.result};r.readAsDataURL(f)};i.click()}
+const hdr=(t,extra)=>`<header class="np"><h1>${t}</h1>${extra||''}</header>`;
+function nxt(){const t0=today();for(let k=0;k<60;k++){const d=add(t0,k);for(const s of SK){const l=dueOn(d,s).filter(({x})=>!S.logs[d+'|'+s+'|'+x.id]);if(l.length)return{d,s,l}}}return null}
+function home(){
+ let h=hdr('💊 Mon pilulier',S.profiles.length>1?btn('who','👤 '+esc(S.cur==='all'?'Tous':pName(S.cur)),''):'');
+ const N=nxt(),now=new Date().toTimeString().slice(0,5);
+ if(N){const late=N.d===today()&&now>=S.times[N.s],w=N.d===today()?'aujourd’hui':N.d===add(today(),1)?'demain':fr(N.d);
+  h+=`<section class="c big"><div class="k">${late?'À PRENDRE MAINTENANT':'Prochaine prise'}</div><div class="t">${IC[N.s]} ${SL[N.s]} · ${w} · ${hm(S.times[N.s])}</div>${N.l.map(({o,x})=>`<div class="r">${thumb(x)}<div><b>${esc(x.name)}</b><br>${fq(x.q[N.s])} ${x.u||'comprimé'}${x.q[N.s]>1?'s':''}${S.cur==='all'?' · 👤 '+esc(pName(o.p)):''}</div></div>`).join('')}${btn('take','✔ J’ai pris mes médicaments','p big',N.d+'|'+N.s)}</section>`}
+ else h+='<section class="c"><div class="t">🎉 Rien à prendre pour le moment</div><div class="mu">Ajoutez une ordonnance pour commencer.</div></section>';
+ meds().filter(({o,x})=>o.on&&x.on&&x.prn&&today()>=x.start&&(!x.dur||today()<=add(x.start,x.dur-1))&&!hid[x.id]).forEach(({o,x})=>{h+=`<section class="c"><div class="t">Avez-vous : ${esc(x.sym.toLowerCase())} ?</div><div>${esc(x.name)} · ${fq(x.n)} ${x.u||'comprimé'}${x.n>1?'s':''}${x.note?'<br><b>⚠ '+esc(x.note)+'</b>':''}</div>${S.prn[x.id]?`<small>Dernière prise : ${new Date(S.prn[x.id]).toLocaleString('fr-FR',{weekday:'long',hour:'2-digit',minute:'2-digit'})}</small>`:''}<div class="row">${btn('prn','Oui, je le prends','p',x.id)}${btn('no','Non','',x.id)}</div></section>`});
+ S.ords.filter(o=>o.on&&o.snz!==today()&&(S.cur==='all'||o.p===S.cur)&&o.meds.every(x=>!x.on||(x.dur&&add(x.start,x.dur-1)<today()))).forEach(o=>{h+=`<section class="c warn"><div class="t">Traitement terminé ?</div><div>Ordonnance du ${fr(o.d)}${S.cur==='all'?' · 👤 '+esc(pName(o.p)):''}</div>${btn('off','Oui, la désactiver','p',o.id)}${btn('snz','Plus tard','',o.id)}</section>`});
+ return h+btn('add','📄 Ajouter une ordonnance','p big')}
+function pil(){
+ const st=add(today(),pm*7),ds=[...Array(7)].map((_,i)=>add(st,i)),dn=d=>cap(fr(d));
+ const cell=(d,s)=>dueOn(d,s).map(({o,x})=>`<div class="m">${fq(x.q[s])} × ${esc(x.name)}${S.cur==='all'?' <small>('+esc(pName(o.p))+')</small>':''}</div>`).join('')||'<span class="mu">—</span>';
+ let h=hdr('🗓 Pilulier')+`<div class="pr"><h1>Mon pilulier — ${esc(S.cur==='all'?'tous les profils':pName(S.cur))}</h1></div><div class="row np">${btn('mode','7 jours',mode==='w'?'p':'','w')}${btn('mode','Jour par jour',mode==='j'?'p':'','j')}</div><div class="row np">${pm>0?btn('wk','◀ Avant','',-1):''}${btn('wk','Semaine suivante ▶','',1)}</div>`;
+ if(mode==='w')h+=`<div style="overflow-x:auto"><table><tr><th></th>${SK.map(s=>`<th>${IC[s]} ${SL[s]}</th>`).join('')}</tr>${ds.map(d=>`<tr><th>${dn(d)}</th>${SK.map(s=>`<td>${cell(d,s)}</td>`).join('')}</tr>`).join('')}</table></div>`;
+ else h+=`<div class="sn">${ds.map(d=>`<div class="c"><div class="t">${dn(d)}</div>${SK.map(s=>`<div class="k">${IC[s]} ${SL[s]} · ${hm(S.times[s])}</div>${cell(d,s)}<br>`).join('')}</div>`).join('')}</div><small class="np">Faites glisser pour changer de jour →</small>`;
+ return h+`<div class="np">${btn('print','🖨 Exporter / imprimer (PDF)','p big')}${btn('share','📤 Partager en texte','big')}</div>`}
+function mv(){
+ const L=meds().sort((a,b)=>(b.x.on&&b.o.on)-(a.x.on&&a.o.on));
+ return hdr('💊 Médicaments')+btn('madd','➕ Ajouter un médicament','p big')+(L.length?L.map(({o,x})=>`<section class="c ${x.on&&o.on?'':'off'}"><div class="r">${thumb(x)}<div><b>${esc(x.name)}</b><br><span class="mu">${pos(x)}</span>${x.by?'<br><small>Remplacé par '+esc(x.by)+'</small>':''}${S.cur==='all'?'<br><small>👤 '+esc(pName(o.p))+'</small>':''}</div></div><div class="row">${btn('ord','📄 Ordonnance','',o.id)}${btn('box','📷 Boîte','',o.id+'|'+x.id)}${x.on?btn('rep','🔄 Remplacer','',o.id+'|'+x.id)+btn('stop','⏹ Arrêter','',o.id+'|'+x.id):btn('start','▶ Reprendre','',o.id+'|'+x.id)}</div></section>`).join(''):'<p class="mu">Aucun médicament pour l’instant.</p>')}
+function ords(){
+ const L=S.ords.filter(o=>S.cur==='all'||o.p===S.cur).sort((a,b)=>b.d.localeCompare(a.d));
+ return hdr('📄 Ordonnances')+btn('add','➕ Nouvelle ordonnance','p big')+L.map(o=>`<section class="c ${o.on?'':'off'}" data-a="ord" data-v="${o.id}"><div class="r" style="justify-content:space-between"><div><b>${o.man?'✍ Ajouts manuels · ':''}${cap(fr(o.d))}</b><br><small>${o.meds.length} médicament${o.meds.length>1?'s':''}${S.profiles.length>1?' · 👤 '+esc(pName(o.p)):''}</small></div><span class="tag ${o.on?'ok':''}">${o.on?'Active':'Terminée'}</span></div></section>`).join('')}
+function od(){
+ const o=S.ords.find(o=>o.id===ID);if(!o){V='ord';return ords()}
+ return hdr('📄 Ordonnance')+btn('tab','← Retour','','ord')+`<section class="c"><b>${cap(fr(o.d))}</b> · 👤 ${esc(pName(o.p))} <span class="tag ${o.on?'ok':''}">${o.on?'Active':'Terminée'}</span>${o.photo?`<img src="${o.photo}" alt="Ordonnance" style="width:100%;border-radius:12px;margin-top:10px">`:btn('oph','📷 Photo','',o.id)+btn('opf','📁 Fichier','',o.id)}</section>`+o.meds.map(x=>`<section class="c ${x.on?'':'off'}"><div class="r">${thumb(x)}<div><b>${esc(x.name)}</b><br><span class="mu">${pos(x)}</span></div></div></section>`).join('')+btn('mto','➕ Ajouter un médicament','big',o.id)+btn('otog',o.on?'⏹ Désactiver l’ordonnance':'▶ Réactiver l’ordonnance','p big',o.id)+btn('odel',cf===o.id?'Confirmer la suppression':'🗑 Supprimer','',o.id)}
+function set(){
+ return hdr('⚙ Réglages')+`<section class="c"><div class="t">⏰ Heures des rappels</div>${SK.map(s=>`<div class="cnt">${IC[s]} <span style="min-width:70px">${SL[s]}</span><input type="time" data-t="${s}" value="${S.times[s]}"></div>`).join('')}${btn('notif','🔔 Activer les notifications','')}<small>${NAT()?'Les rappels sonnent même quand l’appli est fermée.':'Les rappels ne sonnent que si l’appli est ouverte ; installez l’application Android pour des rappels fiables.'}</small></section><section class="c"><div class="t">👤 Profils</div>${S.profiles.map(p=>`<div class="row"><input data-pn="${p.id}" value="${esc(p.n)}">${btn('pdel','🗑','',p.id)}</div>`).join('')}<div class="row" style="margin-top:8px"><input id="np" placeholder="Nouveau profil (ex. Léa)">${btn('padd','Ajouter','p')}</div></section>`}
+function who(){return hdr('👤 Qui ?')+S.profiles.map(p=>btn('sel',esc(p.n),'p big',p.id)).join('')+btn('sel','👪 Vue générale','big','all')}
+const res=()=>{const q=norm(P.q);if(q.length<2)return'<p class="mu">Écrivez au moins 2 lettres.</p>';return DB.map((g,i)=>[g,i]).filter(([g])=>norm(g.g+' '+g.n.join(' ')).includes(q)).slice(0,8).map(([g,i])=>btn('g',`<b>${g.g}</b><br><small>${esc(g.n.slice(0,3).join(', '))}…</small>`,'left',i)).join('')+(q.length>2?btn('oth','Autre : « '+esc(P.q)+' »','left'):'')};
+const cnt=(k,l,v)=>`<div class="cnt"><span style="min-width:80px">${l}</span>${btn('c','−','',k+'|-.5')}<b>${fq(v)}</b>${btn('c','+','',k+'|.5')}</div>`;
+function picker(){
+ if(P.st==='search')return`<h2>Quel médicament ?</h2><input id="q" placeholder="Tapez le nom sur l’ordonnance" value="${esc(P.q)}" data-i="q"><div id="res">${res()}</div>${btn('pno','Annuler','')}`;
+ if(P.st==='brand'){const g=DB[P.g];return`<h2>Lequel la pharmacie vous a-t-elle donné ?</h2><small>Regardez le nom sur la boîte.</small>${g.n.map((n,i)=>btn('nm',esc(n),'left',i)).join('')}${btn('dci','Je ne sais pas : '+g.g,'left')}${btn('back','← Retour','')}`}
+ return`<h2>${esc(P.name)}</h2><div class="row">${btn('ty','Régulier',!P.prn?'p':'','0')}${btn('ty','Si besoin',P.prn?'p':'','1')}</div><div class="k">Forme</div><div class="row">${UN.map(u=>btn('un',u,(P.u||'comprimé')===u?'p':'',u)).join('')}</div>`+(P.prn?`${cnt('n','Comprimés',P.n)}<div class="k">Si quel symptôme ?</div><div class="row">${S.symptoms.map(s=>btn('sym',esc(s),P.sym===s?'p':'',esc(s))).join('')}</div><div class="row"><input id="ns" placeholder="Autre symptôme">${btn('nsym','Ajouter','')}</div>`:SK.map(k=>cnt(k,IC[k]+' '+SL[k],P.q3[k])).join(''))+`<div class="k">Pendant combien de temps ?</div><div class="row">${[3,5,7,10,14,21,30,60,90].map(n=>btn('dur',n===30?'1 mois':n===60?'2 mois':n===90?'3 mois':n+' j',P.dur===n?'p':'',n)).join('')}${btn('dur','Sans fin',P.dur===null?'p':'','')}</div><div class="k">Plafond ou consigne (facultatif)</div><input id="nt" placeholder="ex. maximum 3 fois par jour, 4 h entre 2 prises" data-i="nt" value="${esc(P.note||'')}" style="width:100%"><div class="row" style="margin-top:8px"><span>Début :</span><input type="date" data-d="psd" value="${P.sd||''}"></div><div class="row">${[0,1,2].map(k=>btn('sd',['Aujourd’hui','Demain','Dans 2 jours'][k],P.sd===add(today(),k)?'p':'',add(today(),k))).join('')}</div><div class="row"><span>Fin :</span><input type="date" data-d="ped" value="${P.ed||''}"></div><small>Dates à remplir seulement si elles diffèrent de l’ordonnance.</small>${btn('pok','✔ Valider ce médicament','p big')}${btn('pno','Annuler','')}`}
+function add_(){
+ if(P)return picker();
+ if(W.step===1)return hdr('📷 Nouvelle ordonnance')+(S.profiles.length>1?`<div class="k">Pour qui ?</div><div class="row">${S.profiles.map(p=>btn('wp',esc(p.n),W.p===p.id?'p':'',p.id)).join('')}</div>`:'')+btn('scan','📷 Photographier mon ordonnance','p big')+btn('file','📁 Importer un PDF ou une image (Doctolib…)','p big')+btn('skip','Continuer sans photo','big')+btn('tab','Annuler','','home');
+ if(W.step===2)return hdr('💊 Médicaments')+(W.photo?`<img src="${W.photo}" alt="Ordonnance" style="width:100%;max-height:200px;object-fit:cover;border-radius:12px">`:'')+(W.photo&&SMP?btn('read',W.reading?'⏳ Lecture en cours… (patientez)':'✨ Lire l’ordonnance automatiquement','p big'):'')+W.meds.map((x,i)=>`<section class="c ${x.chk?'warn':''}">${x.chk?'<small>⚠ À vérifier avec l’ordonnance</small><br>':''}<b>${esc(x.name)}</b><br><span class="mu">${pos({...x,start:today()})}</span><br>${btn('wed','✏ Modifier','',i)}${btn('wdel','Retirer','',i)}</section>`).join('')+btn('padd2','➕ Ajouter un médicament',W.meds.length?'big':'p big')+(W.meds.length?btn('next','Suivant →','p big'):'')+btn('tab','Annuler','','home');
+ return hdr('📅 Première prise')+`<div class="t">Quand prenez-vous la première dose ?</div><div class="row">${btn('ws','Aujourd’hui',W.start===today()?'p':'',today())}${btn('ws','Demain',W.start===add(today(),1)?'p':'',add(today(),1))}</div><div class="row"><span>Autre date :</span><input type="date" data-d="ws" value="${W.start}"></div><div class="row" style="margin-top:12px"><span>Date de l’ordonnance :</span><input type="date" data-d="od" value="${W.d}"></div>${btn('save','✔ Enregistrer','p big')}${btn('back2','← Retour','')}`}
+function mpick(){const L=S.ords.filter(o=>!o.man&&(S.cur==='all'||o.p===S.cur)).sort((a,b)=>b.d.localeCompare(a.d)),PR=S.profiles.filter(p=>S.cur==='all'||p.id===S.cur),mp=S.profiles.length>1;
+ return hdr('➕ Ajouter un médicament')+'<div class="t">À quelle ordonnance ?</div>'+L.map(o=>btn('mto',cap(fr(o.d))+(mp?' · '+esc(pName(o.p)):''),'left',o.id)).join('')+PR.map(p=>btn('mto','✍ Sans ordonnance'+(mp?' · '+esc(p.n):''),'left','man:'+p.id)).join('')+btn('tab','Annuler','','meds')}
+const TABS=[['home','🏠','Aujourd’hui'],['pil','🗓','Pilulier'],['meds','💊','Médicaments'],['ord','📄','Ordonnances'],['set','⚙','Réglages']];
+function render(){
+ const m={mpick,home,pil,meds:mv,ord:ords,od,set,who,add:add_,pick:()=>picker()};
+ $('#app').innerHTML=m[V]();
+ $('#nav').innerHTML=TABS.some(t=>t[0]===V)||V==='od'?TABS.map(t=>`<button class="${t[0]===V||(V==='od'&&t[0]==='ord')?'on':''}" data-a="tab" data-v="${t[0]}"><span>${t[1]}</span>${t[2]}</button>`).join(''):''}
+const newP=cb=>({st:'search',q:'',g:null,name:'',prn:false,q3:{m:1,d:0,s:1},n:1,sym:S.symptoms[0],dur:7,u:'comprimé',note:'',sd:'',ed:'',cb});
+function act(a,v){
+ const[p1,p2]=(v||'').split('|'),O=id=>S.ords.find(o=>o.id===id),X=(o,id)=>o.meds.find(x=>x.id===id);
+ switch(a){
+ case'tab':V=v;cf=null;W=null;P=null;break;
+ case'who':V='who';break;
+ case'sel':S.cur=v;V='home';break;
+ case'take':dueOn(p1,p2).forEach(({x})=>S.logs[p1+'|'+p2+'|'+x.id]=1);toast('C’est noté ✔');break;
+ case'prn':S.prn[v]=new Date().toISOString();toast('Prise enregistrée ✔');break;
+ case'no':hid[v]=1;break;
+ case'off':O(v).on=false;break;
+ case'snz':O(v).snz=today();break;
+ case'add':W={step:1,p:S.cur==='all'?S.profiles[0].id:S.cur,meds:[],d:today(),start:today(),photo:null};P=null;V='add';break;
+ case'wp':W.p=v;break;
+ case'scan':grab(d=>{W.photo=d;W.step=2;render()},1400);return;
+ case'skip':W.step=2;break;
+ case'file':grab(d=>{W.photo=d;W.step=2;render()},1400,true);return;
+ case'opf':grab(d=>{O(v).photo=d;save();render()},1400,true);return;
+ case'padd2':P=newP(m=>{W.meds.push(m);P=null});break;
+ case'wdel':W.meds.splice(+v,1);break;
+ case'madd':V='mpick';break;
+ case'sd':P.sd=v;break;
+ case'mto':{const man=v.startsWith('man:');let o=man?S.ords.find(o=>o.man&&o.p===v.slice(4)):O(v);P=newP(x=>{if(x.ed&&!x.sd)x.dur=Math.max(1,Math.round((new Date(x.ed)-new Date(today()))/864e5)+1);if(!o){o={id:uid(),p:v.slice(4),d:today(),on:true,man:true,meds:[]};S.ords.push(o)}o.on=true;o.meds.push(x);P=null;V='meds';toast('Médicament ajouté ✔')});V='pick';break}
+ case'un':P.u=v;break;
+ case'read':readOrd();return;
+ case'wed':{const i=+v,x=W.meds[i];P=newP(m=>{W.meds[i]=m;P=null});Object.assign(P,{st:'pos',name:x.name,prn:x.prn,q3:{...x.q},n:x.n||1,sym:x.sym,dur:x.dur,u:x.u||'comprimé',note:x.note||'',sd:x.sd||'',ed:x.ed||''});break}
+ case'next':W.step=3;break;
+ case'back2':W.step=2;break;
+ case'ws':W.start=v;break;
+ case'save':{const o={id:uid(),p:W.p,d:W.d,photo:W.photo,on:true,meds:W.meds.map(x=>{const s=x.sd||W.start,y={...x,start:s,chk:0};if(x.ed)y.dur=Math.max(1,Math.round((new Date(x.ed)-new Date(s))/864e5)+1);return y})};S.ords.push(o);W=null;V='home';toast('Ordonnance enregistrée ✔');break}
+ case'g':P.g=+v;P.st='brand';break;
+ case'nm':P.name=DB[P.g].n[+v];P.st='pos';break;
+ case'dci':P.name=DB[P.g].g;P.st='pos';break;
+ case'oth':P.name=P.q;P.st='pos';break;
+ case'back':P.st='search';break;
+ case'ty':P.prn=v==='1';break;
+ case'c':{const L=[0,.25,.5,.75,1,1.5,2,2.5,3,3.5,4,5,6,8],st=(c,d)=>{let i=L.findIndex(z=>z>=c-1e-9);if(i<0)i=L.length-1;return L[Math.max(0,Math.min(L.length-1,i+d))]};if(p1==='n')P.n=Math.max(.25,st(P.n,+p2>0?1:-1));else P.q3[p1]=st(P.q3[p1],+p2>0?1:-1);break}
+ case'dur':P.dur=v===''?null:+v;break;
+ case'sym':P.sym=v;break;
+ case'nsym':{const s=$('#ns').value.trim();if(s){if(!S.symptoms.includes(s))S.symptoms.push(s);P.sym=s}break}
+ case'pok':{if(!P.prn&&!SK.some(k=>P.q3[k]>0)){toast('Choisissez au moins une prise.');return}
+  const x={id:uid(),name:P.name,prn:P.prn,q:{...P.q3},n:P.n,sym:P.sym,dur:P.dur,on:true,start:P.sd||today(),sd:P.sd,ed:P.ed,u:P.u,note:P.note};if(P.sd&&P.ed)x.dur=Math.max(1,Math.round((new Date(P.ed)-new Date(P.sd))/864e5)+1);const cb=P.cb;cb(x);break}
+ case'pno':P=null;if(V==='pick')V='meds';break;
+ case'ord':ID=p1;V='od';break;
+ case'otog':O(v).on=!O(v).on;break;
+ case'odel':if(cf!==v){cf=v;toast('Appuyez encore pour supprimer');break}S.ords=S.ords.filter(o=>o.id!==v);cf=null;V='ord';break;
+ case'oph':grab(d=>{O(v).photo=d;save();render()},1000);return;
+ case'box':grab(d=>{X(O(p1),p2).img=d;save();render()},300);return;
+ case'rep':{const o=O(p1),old=X(o,p2);P=newP(nx=>{old.on=false;old.by=nx.name;o.meds.push(nx);P=null;V='meds';toast('Médicament remplacé ✔')});P.q3={...old.q};P.prn=old.prn;P.n=old.n||1;P.sym=old.sym||P.sym;P.dur=old.dur;P.u=old.u||'comprimé';P.note=old.note||'';V='pick';break}
+ case'stop':X(O(p1),p2).on=false;break;
+ case'start':X(O(p1),p2).on=true;break;
+ case'mode':mode=v;break;
+ case'wk':pm=Math.max(0,pm+ +v);break;
+ case'print':mode='w';render();if(NAT())return act('share');window.print();return;
+ case'share':{const st=today();let t='Mon pilulier — 7 jours\n';for(let i=0;i<7;i++){const d=add(st,i);t+='\n'+cap(fr(d))+'\n';SK.forEach(s=>{const l=dueOn(d,s).map(({x})=>fq(x.q[s])+' × '+x.name).join(', ');if(l)t+=SL[s]+' : '+l+'\n'})}try{const SH=window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.Share;if(SH)SH.share({title:'Mon pilulier',text:t});else navigator.share({text:t})}catch(e){toast('Partage indisponible')}return}
+ case'padd':{const n=$('#np').value.trim();if(n)S.profiles.push({id:uid(),n});break}
+ case'pdel':if(S.profiles.length<2||S.ords.some(o=>o.p===v)){toast('Impossible : profil unique ou ordonnances liées');return}S.profiles=S.profiles.filter(p=>p.id!==v);if(S.cur===v)S.cur=S.profiles[0].id;break;
+ case'notif':if(NAT()){sched().then(()=>toast('Rappels programmés ✔'));return}try{Notification.requestPermission().then(r=>toast(r==='granted'?'Notifications activées':'Notifications refusées'))}catch(e){toast('Non disponible ici')}return;
+ }
+ save();render();sched2()}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(b)act(b.dataset.a,b.dataset.v)});
+document.addEventListener('input',e=>{if(e.target.dataset.i==='q'){P.q=e.target.value;$('#res').innerHTML=res()}else if(e.target.dataset.i==='nt')P.note=e.target.value});
+document.addEventListener('change',e=>{const d=e.target.dataset;if(d.t){S.times[d.t]=e.target.value}else if(d.pn){S.profiles.find(p=>p.id===d.pn).n=e.target.value.trim()||'Profil'}else if(d.d==='ws'&&e.target.value){W.start=e.target.value}else if(d.d==='od'&&e.target.value){W.d=e.target.value}else if(d.d==='psd'){P.sd=e.target.value}else if(d.d==='ped'){P.ed=e.target.value}else return;save();if(d.d)render()});
+setInterval(()=>{const n=new Date(),t=n.toTimeString().slice(0,5),k=today();for(const s of SK)if(S.times[s]===t&&S.nt!==k+s&&dueOn(k,s).some(({x})=>!S.logs[k+'|'+s+'|'+x.id])){S.nt=k+s;save();toast('⏰ C’est l’heure : '+SL[s].toLowerCase());try{new Notification('💊 Mon pilulier','C’est l’heure de la prise du '+SL[s].toLowerCase())}catch(e){}}if(V==='home')render()},20000);
+let SMP=null;try{window.claude.use('sample').then(f=>{SMP=f;if(V==='add')render()}).catch(()=>{})}catch(e){}
+const PROMPT=`Tu lis l’image d’une ordonnance médicale française. Extrais CHAQUE médicament ou produit prescrit (y compris crèmes, injections, bains de bouche, patchs). Si une correction manuscrite remplace un nom imprimé, utilise le nom manuscrit. Si une ligne combine un traitement régulier puis « si besoin », fais deux entrées. Ne recopie jamais le nom du patient ni son numéro de sécurité sociale. Réponds UNIQUEMENT par un tableau JSON, sans texte autour. Chaque élément : {"name": nom + dosage tel qu’écrit (ex. "Doliprane 1000 mg"), "prn": true si « si besoin / si douleurs / en cas de… », "symptom": symptôme déclencheur en un ou deux mots si prn (ex. "Douleur", "Nausées") sinon null, "m": unités le matin, "d": unités à midi, "s": unités le soir (0 si aucune ; « 3 fois par jour » ou « avant chaque repas » = 1 matin, 1 midi, 1 soir ; 0 si prn), "n": unités par prise si prn (ex. 2 pour « 2 cp »), "unit": "comprimé"|"gélule"|"sachet"|"injection"|"application"|"dose", "days": durée en jours si indiquée (1 semaine = 7, 2 semaines = 14, 1 mois = 30, 3 mois = 90) sinon null, "start": date de début AAAA-MM-JJ si indiquée sinon null, "end": date de fin AAAA-MM-JJ si indiquée sinon null, "note": consigne utile en moins de 15 mots (ex. "max 3 fois par jour, 4 h entre 2 prises") ou ""}. Fractions : 1/4 = 0.25. N’invente rien : si une information est illisible, mets null ou "".`;
+async function readOrd(){
+ if(!SMP||!W||!W.photo||W.reading)return;W.reading=1;render();
+ try{const bin=atob(W.photo.split(',')[1]),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
+  const r=await SMP.json(PROMPT,{images:[new Blob([u],{type:'image/jpeg'})]}),arr=Array.isArray(r)?r:(r.meds||[]);
+  arr.forEach(m=>{const q={m:+m.m||0,d:+m.d||0,s:+m.s||0},prn=!!m.prn;if(!prn&&!q.m&&!q.d&&!q.s)q.m=1;const sym=m.symptom||'Douleur';if(prn&&!S.symptoms.includes(sym))S.symptoms.push(sym);W.meds.push({id:uid(),name:String(m.name||'?'),prn,q,n:+m.n||1,sym,dur:+m.days||null,on:true,start:today(),sd:m.start||'',ed:m.end||'',u:UN.includes(m.unit)?m.unit:'comprimé',note:m.note||'',chk:1})});
+  toast(arr.length+' médicament(s) lus : vérifiez chacun ⚠');
+ }catch(e){toast('Lecture impossible ('+(e&&e.code||'erreur')+'). Saisissez à la main.')}
+ if(W)W.reading=0;save();render()}
+const NAT=()=>!!(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform());
+let stt;const sched2=()=>{clearTimeout(stt);stt=setTimeout(sched,800)};
+async function sched(){
+ const LN=NAT()&&Capacitor.Plugins.LocalNotifications;if(!LN)return;
+ try{let p=await LN.checkPermissions();if(p.display!=='granted')p=await LN.requestPermissions();if(p.display!=='granted')return;
+  const pd=await LN.getPending();if(pd.notifications.length)await LN.cancel({notifications:pd.notifications});
+  const out=[],now=new Date(),keep=S.cur;let id=1;S.cur='all';
+  try{for(let k=0;k<14;k++){const d=add(today(),k);for(const s of SK){const at=new Date(d+'T'+S.times[s]+':00');if(at<=now)continue;
+   const l=dueOn(d,s).filter(({x})=>!S.logs[d+'|'+s+'|'+x.id]);if(!l.length)continue;
+   out.push({id:id++,title:IC[s]+' Mon pilulier · '+SL[s],body:l.map(({o,x})=>(S.profiles.length>1?pName(o.p)+' : ':'')+x.name+' ('+fq(x.q[s])+')').join(', '),schedule:{at,allowWhileIdle:true}})}}}finally{S.cur=keep}
+  if(out.length)await LN.schedule({notifications:out})}catch(e){}}
+if(NAT()){sched2();try{const AP=Capacitor.Plugins.App;AP.addListener('backButton',()=>{if(V==='home'&&!P&&!W)AP.exitApp();else{P=null;W=null;V='home';render()}})}catch(e){}}
+render();
+</script></body></html>
